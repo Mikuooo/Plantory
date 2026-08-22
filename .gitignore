@@ -1,0 +1,15 @@
+node_modules/
+.pnpm-store/
+.expo/
+.turbo/
+dist/
+coverage/
+*.log
+.agents/
+.codex/
+.claude/
+
+# Local environment files
+.env
+.env.*
+!.env.example
