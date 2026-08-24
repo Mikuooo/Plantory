@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "dev:mobile": "pnpm --filter plantory start",
-    "lint:mobile": "pnpm --filter plantory lint"
+    "dev:android": "pnpm --filter plantory android",
+    "lint:mobile": "pnpm --filter plantory lint",
+    "typecheck:mobile": "pnpm --filter plantory typecheck"
   }
 }

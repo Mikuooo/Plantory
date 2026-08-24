@@ -1,0 +1,42 @@
+diff --git a/src/components/ReanimatedDrawerLayout.tsx b/src/components/ReanimatedDrawerLayout.tsx
+index 2d1fbd120d725f240400adedfc8c7f0b544f89ac..5d480b48682cdc1db4ca94dc83bbb026699a5019 100644
+--- a/src/components/ReanimatedDrawerLayout.tsx
++++ b/src/components/ReanimatedDrawerLayout.tsx
+@@ -48,6 +48,7 @@ import {
+ import { PanGestureHandlerEventPayload } from '../handlers/GestureHandlerEventPayload';
+ 
+ const DRAG_TOSS = 0.05;
++const DRAWER_OPEN_ANGLE_RADIANS = (5 * Math.PI) / 180;
+ 
+ export enum DrawerPosition {
+   LEFT,
+@@ -302,6 +303,8 @@ const DrawerLayout = forwardRef<DrawerLayoutMethods, DrawerLayoutProps>(
+     } = props;
+ 
+     const isFromLeft = drawerPosition === DrawerPosition.LEFT;
++    const drawerOpenVerticalTolerance =
++      Math.tan(DRAWER_OPEN_ANGLE_RADIANS) * minSwipeDistance;
+ 
+     const sideCorrection = isFromLeft ? 1 : -1;
+ 
+@@ -530,7 +533,11 @@ const DrawerLayout = forwardRef<DrawerLayoutMethods, DrawerLayoutProps>(
+         .hitSlop(drawerOpened ? fillHitSlop : edgeHitSlop)
+         .minDistance(drawerOpened ? 100 : 0)
+         .activeOffsetX(gestureOrientation * minSwipeDistance)
+-        .failOffsetY([-15, 15])
++        .failOffsetY(
++          drawerOpened
++            ? [-15, 15]
++            : [-drawerOpenVerticalTolerance, drawerOpenVerticalTolerance]
++        )
+         .simultaneousWithExternalGesture(overlayDismissGesture)
+         .enableTrackpadTwoFingerGesture(enableTrackpadTwoFingerGesture)
+         .enabled(
+@@ -590,6 +597,7 @@ const DrawerLayout = forwardRef<DrawerLayoutMethods, DrawerLayoutProps>(
+       edgeHitSlop,
+       fillHitSlop,
+       minSwipeDistance,
++      drawerOpenVerticalTolerance,
+       hideStatusBar,
+       keyboardDismissMode,
+       overlayDismissGesture,

@@ -1,33 +1,118 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import React from 'react';
-import { useColorScheme } from 'react-native';
+import { BlurTargetView, BlurView } from 'expo-blur';
+import {
+  Tabs,
+  TabList,
+  TabSlot,
+  TabTrigger,
+  type TabListProps,
+  type TabTriggerSlotProps,
+} from 'expo-router/ui';
+import { useRef, type RefObject } from 'react';
+import { Pressable, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Colors } from '@/constants/theme';
+import { AppIcon, type AppIconName } from '@/components/icons';
+import { ThemedText } from '@/components/themed-text';
+import { useResolvedColorScheme } from '@/hooks/use-resolved-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
+import { appNavigationRoutes } from '@/components/navigation-config';
+
+const TAB_BAR_HEIGHT = 56;
 
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
+  const blurTargetRef = useRef<View | null>(null);
+  const insets = useSafeAreaInsets();
 
   return (
-    <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
+    <Tabs
+      className="h-full w-full min-w-0 max-w-full flex-1 overflow-hidden"
+      style={{ flex: 1, minWidth: 0, maxWidth: '100%' }}>
+      <BlurTargetView
+        ref={blurTargetRef}
+        className="min-w-0 flex-1"
+        style={{
+          flex: 1,
+          minWidth: 0,
+          maxWidth: '100%',
+          paddingBottom: TAB_BAR_HEIGHT + insets.bottom,
+        }}>
+        <TabSlot
+          className="min-w-0 flex-1"
+          style={{ flex: 1, minWidth: 0, maxWidth: '100%' }}
         />
-      </NativeTabs.Trigger>
+      </BlurTargetView>
+      <TabList asChild>
+        <CustomTabList blurTarget={blurTargetRef}>
+          {appNavigationRoutes.map((route) => (
+            <TabTrigger key={route.href} name={route.tabName} href={route.href} asChild>
+              <TabButton icon={route.icon}>{route.label}</TabButton>
+            </TabTrigger>
+          ))}
+        </CustomTabList>
+      </TabList>
+    </Tabs>
+  );
+}
 
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
+function TabButton({
+  children,
+  icon,
+  isFocused,
+  ...props
+}: TabTriggerSlotProps & { icon: AppIconName }) {
+  const theme = useTheme();
+  const label = String(children);
+
+  return (
+    <Pressable
+      {...props}
+      accessibilityLabel={label}
+      className="h-14 overflow-hidden active:opacity-70"
+      style={{ flex: 1, flexBasis: 0, minWidth: 0, width: 0 }}>
+      <View className="h-full w-full min-w-0 items-center justify-center gap-0.5">
+        <AppIcon
+          name={icon}
+          size={22}
+          color={isFocused ? theme.primary : theme.textSecondary}
         />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+        <ThemedText
+          type="smallBold"
+          className="text-xs/4"
+          themeColor={isFocused ? 'primary' : 'textSecondary'}
+          numberOfLines={1}>
+          {children}
+        </ThemedText>
+      </View>
+    </Pressable>
+  );
+}
+
+type CustomTabListProps = TabListProps & {
+  blurTarget: RefObject<View | null>;
+};
+
+function CustomTabList({ blurTarget, ...props }: CustomTabListProps) {
+  const colorScheme = useResolvedColorScheme();
+  const insets = useSafeAreaInsets();
+  const theme = useTheme();
+
+  return (
+    <BlurView
+      {...props}
+      blurMethod="dimezisBlurViewSdk31Plus"
+      blurTarget={blurTarget}
+      intensity={55}
+      tint={colorScheme === 'dark' ? 'systemThinMaterialDark' : 'systemThinMaterialLight'}
+      className="absolute right-0 bottom-0 left-0 w-full max-w-full overflow-hidden"
+      style={{
+        backgroundColor: `${theme.backgroundElement}A6`,
+        paddingBottom: insets.bottom,
+      }}>
+      <View
+        className="w-full min-w-0 flex-row items-center overflow-hidden px-1"
+        style={{ height: TAB_BAR_HEIGHT }}>
+        {props.children}
+      </View>
+    </BlurView>
   );
 }
