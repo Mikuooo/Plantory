@@ -35,13 +35,20 @@ apps/mobile/
 app/
 ├── _layout.tsx
 ├── (tabs)/
-│   ├── calendar.tsx
+│   ├── _layout.tsx
+│   ├── index.tsx
 │   ├── plants.tsx
 │   └── archive.tsx
+├── assets/
+│   ├── pots.tsx
+│   ├── media.tsx
+│   ├── fertilizers.tsx
+│   └── pesticides.tsx
 ├── plant/[id].tsx
-├── record/new.tsx
-└── drawer/
+└── record/new.tsx
 ```
+
+根布局使用 Stack，`(tabs)` 路由组承载日历、植物和归档三个底部标签页。全屏侧边栏不重复展示标签页入口，只提供花盆、介质、肥料和农药四个资产入口；每个入口进入独立页面，资产页面不显示底部标签栏。
 
 ## 3. 本地开发
 
@@ -86,11 +93,13 @@ Expo 原生模块必须使用 `expo install`，由 Expo 根据 SDK 55 选择兼�
 
 建议的数据职责：
 
-- SQLite：植物、养护记录、成长记录、照片索引和待办等本地业务数据。
+- SQLite：植物、养护记录、成长记录、照片索引、待办和资产等本地业务数据。当前资产清单通过 `expo-sqlite/kv-store` 持久化。
 - SecureStore：登录令牌等敏感凭证，不保存业务列表。
 - AsyncStorage：主题、日历展开状态等非敏感的本机 UI 偏好。
 - Zustand：筛选、抽屉、临时表单等 UI 状态；需要跨启动保留的 UI 偏好通过 persist 接入 AsyncStorage。
 - TanStack Query：远程 API 缓存、请求生命周期和失效刷新。
+
+花盆资产使用独立结构保存名称、容量、圆形或方形尺寸、数量、购买方式、单价、备注、材质和颜色。原生详情页通过 `expo-gl`、Three.js 和 React Three Fiber 按尺寸实时生成参数化模型，并使用白色墙面、地面和顶部贴面网格组成正面轻透视展示场景；模型不依赖网络资源，渲染失败时必须保留完整规格与编辑入口。
 
 照片从相机或相册取得后，必须复制到持久目录，再把稳定 URI 写入业务记录；不能直接依赖相机返回的临时 URI。
 

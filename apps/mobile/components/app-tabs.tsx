@@ -7,6 +7,7 @@ import {
   type TabListProps,
   type TabTriggerSlotProps,
 } from 'expo-router/ui';
+import type { Href } from 'expo-router';
 import { useRef, type RefObject } from 'react';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -44,7 +45,7 @@ export default function AppTabs() {
       <TabList asChild>
         <CustomTabList blurTarget={blurTargetRef}>
           {appNavigationRoutes.map((route) => (
-            <TabTrigger key={route.href} name={route.tabName} href={route.href} asChild>
+            <TabTrigger key={route.href} name={route.tabName} href={route.href as Href} asChild>
               <TabButton icon={route.icon}>{route.label}</TabButton>
             </TabTrigger>
           ))}

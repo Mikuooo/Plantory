@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 import { AppSidebarNativeGestureBoundary } from '@/components/app-sidebar';
 import { AppIcon, type AppIconName } from '@/components/icons';
@@ -59,6 +60,7 @@ const groupRules: { value: GroupRule; label: string }[] = [
 ];
 
 export default function PlantsScreen() {
+  const router = useRouter();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width: viewportWidth } = useWindowDimensions();
@@ -250,7 +252,7 @@ export default function PlantsScreen() {
                 cardWidth={viewMode === 'grid' ? gridCardWidth : contentWidth}
                 onPress={() => selectionActive
                   ? toggleSelected(plant.id)
-                  : Alert.alert(plant.name, '植物详情将在下一阶段接入。')}
+                  : router.push({ pathname: '/plants/[id]/v2', params: { id: plant.id } })}
                 onLongPress={() => toggleSelected(plant.id)}
               />
             ))}

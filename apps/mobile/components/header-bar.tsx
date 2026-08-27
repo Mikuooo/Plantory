@@ -13,6 +13,8 @@ type HeaderBarProps = {
   leading?: ReactNode;
   trailing?: ReactNode;
   profileName?: string;
+  transparent?: boolean;
+  navigation?: boolean;
 };
 
 export function HeaderBar({
@@ -23,6 +25,8 @@ export function HeaderBar({
   leading,
   trailing,
   profileName = 'Plantory',
+  transparent = false,
+  navigation = false,
 }: HeaderBarProps) {
   const insets = useSafeAreaInsets();
   const pageContext = subtitle ? `${title} · ${subtitle}` : title;
@@ -30,22 +34,24 @@ export function HeaderBar({
   return (
     <ThemedView
       type="backgroundElement"
-      className="w-full max-w-full flex-row items-center gap-3 overflow-hidden px-6"
-      style={{ height: 56 + insets.top, paddingTop: insets.top }}>
+      className={`w-full max-w-full flex-row items-center gap-3 overflow-hidden px-6 ${transparent ? 'absolute left-0 right-0 top-0 z-10' : ''}`}
+      style={{
+        height: 56 + insets.top,
+        paddingTop: insets.top,
+        backgroundColor: transparent ? 'transparent' : undefined,
+      }}>
       <View className="h-11 w-11 shrink-0 items-center justify-center">{leading}</View>
-      <View className="min-w-0 flex-1">
-        <ThemedText
-          className="text-base/6 font-semibold"
-          numberOfLines={1}>
-          {profileName}
-        </ThemedText>
-        <ThemedText
-          type="small"
-          themeColor="textSecondary"
-          numberOfLines={1}>
-          {pageContext}
-        </ThemedText>
-      </View>
+      {navigation ? (
+        <View pointerEvents="none" className="absolute right-20 left-20 bottom-0 h-14 items-center justify-center">
+          <ThemedText className="text-base/6 font-semibold" numberOfLines={1}>{title}</ThemedText>
+        </View>
+      ) : (
+        <View className="min-w-0 flex-1">
+          <ThemedText className="text-base/6 font-semibold" numberOfLines={1}>{profileName}</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>{pageContext}</ThemedText>
+        </View>
+      )}
+      {navigation ? <View className="min-w-0 flex-1" /> : null}
       {trailing ? (
         <View className="min-h-11 shrink-0 items-end justify-center">{trailing}</View>
       ) : actionLabel ? (

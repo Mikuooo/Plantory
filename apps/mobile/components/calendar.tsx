@@ -1,5 +1,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { PanResponder, Pressable, useWindowDimensions, View } from 'react-native';
+import { Image, PanResponder, Pressable, View } from 'react-native';
+import type { ReactNode } from 'react';
+import type { ImageSourcePropType } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -19,6 +21,10 @@ type CalendarProps = {
   onSelectDate: (date: string) => void;
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
+  calendarImageSource?: ImageSourcePropType;
+  todayStyle?: 'border' | 'inset';
+  headerTrailing?: ReactNode;
+  headerTitle?: string;
 };
 
 export type CalendarMotionHandle = {
@@ -94,17 +100,17 @@ function MonthAnimatedRow({
 }
 
 export const Calendar = forwardRef<CalendarMotionHandle, CalendarProps>(function Calendar(
-  { selectedDate, onSelectDate, expanded, onExpandedChange },
+  { selectedDate, onSelectDate, expanded, onExpandedChange, calendarImageSource, todayStyle = 'border', headerTrailing, headerTitle },
   ref,
 ) {
   const theme = useTheme();
   const sidebarSwipeExclusion = useAppSidebarSwipeExclusion();
   const containerRef = useRef<View>(null);
-  const { width: windowWidth } = useWindowDimensions();
   const [visibleDate, setVisibleDate] = useState(() => getDateFromKey(selectedDate));
   const [weekAnchor, setWeekAnchor] = useState(() => getWeekAnchor(getDateFromKey(selectedDate)));
   const [buttonInteractive, setButtonInteractive] = useState(!expanded);
-  const [pageWidth, setPageWidth] = useState(Math.max(windowWidth - 56, 1));
+  const [pageWidth, setPageWidth] = useState(0);
+  const [contentReady, setContentReady] = useState(false);
   const expandedRef = useRef(expanded);
   const visibleDateRef = useRef(visibleDate);
   const currentWeekAnchorRef = useRef(getWeekAnchor(getDateFromKey(selectedDate)));
@@ -115,8 +121,8 @@ export const Calendar = forwardRef<CalendarMotionHandle, CalendarProps>(function
   const pendingHorizontalDirectionRef = useRef<-1 | 1 | null>(null);
   const collapseProgress = useSharedValue(expanded ? 0 : 1);
   const horizontalOffset = useSharedValue(0);
-  const cellSize = useSharedValue(pageWidth / 7);
-  const expandedGridHeight = useSharedValue(getMonth(visibleDate).length / 7 * (pageWidth / 7));
+  const cellSize = useSharedValue(1);
+  const expandedGridHeight = useSharedValue(1);
 
   const currentMonthDates = useMemo(() => getMonth(visibleDate), [visibleDate]);
   const selectedIndex = currentMonthDates.findIndex((date) => getDateKey(date) === selectedDate);
@@ -144,13 +150,17 @@ export const Calendar = forwardRef<CalendarMotionHandle, CalendarProps>(function
   }, [expanded, selectedDate]);
 
   useEffect(() => {
-    const nextCellSize = pageWidth / 7;
-    cellSize.value = nextCellSize;
+    if (pageWidth <= 0) return;
+    const nextGridHeight = getMonth(visibleDate).length / 7 * cellSize.value;
     expandedGridHeight.value = withTiming(
-      getMonth(visibleDate).length / 7 * nextCellSize,
+      nextGridHeight,
       { duration: 180, easing: Easing.out(Easing.cubic) },
     );
   }, [cellSize, expandedGridHeight, pageWidth, visibleDate]);
+
+  useEffect(() => {
+    if (pageWidth > 0) setContentReady(true);
+  }, [pageWidth]);
 
   const finishVerticalAnimation = useCallback((target: 0 | 1) => {
     const nextExpanded = target === 0;
@@ -327,7 +337,7 @@ export const Calendar = forwardRef<CalendarMotionHandle, CalendarProps>(function
   }));
 
   const trackStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: -pageWidth + horizontalOffset.value }],
+    transform: [{ translateX: horizontalOffset.value }],
   }));
 
   const buttonContainerStyle = useAnimatedStyle(() => ({
@@ -361,7 +371,9 @@ export const Calendar = forwardRef<CalendarMotionHandle, CalendarProps>(function
   const todayKey = getDateKey(new Date());
 
   const renderTrack = (pages: typeof monthPages, isMonth: boolean) => (
-    <Animated.View className="flex-row" style={[{ width: pageWidth * 3 }, trackStyle]}>
+    <Animated.View
+      className="flex-row"
+      style={[{ marginLeft: -pageWidth, width: pageWidth * 3 }, trackStyle]}>
       {pages.map((page) => (
         <Animated.View
           key={`${isMonth ? 'month' : 'week'}-${page.offset}-${getDateKey(page.anchor)}`}
@@ -374,7 +386,7 @@ export const Calendar = forwardRef<CalendarMotionHandle, CalendarProps>(function
                 rowIndex={rowIndex}
                 targetRowIndex={collapseRowIndex}
                 collapseProgress={collapseProgress}>
-                {page.dates.slice(rowIndex * 7, rowIndex * 7 + 7).map((date) => {
+                {page.dates.slice(rowIndex * 7, rowIndex * 7 + 7).map((date, columnIndex) => {
                   const key = getDateKey(date);
                   const isSelected = key === selectedDate;
                   const isToday = key === todayKey;
@@ -395,7 +407,7 @@ export const Calendar = forwardRef<CalendarMotionHandle, CalendarProps>(function
                       className="min-w-0 flex-1 items-center justify-center active:opacity-60"
                       style={{ aspectRatio: 1, flexBasis: 0 }}>
                       <View
-                        className="items-center justify-center rounded-lg"
+                        className="items-center justify-center overflow-hidden rounded-lg"
                         style={{
                           alignSelf: 'stretch',
                           backgroundColor: isSelected
@@ -408,6 +420,30 @@ export const Calendar = forwardRef<CalendarMotionHandle, CalendarProps>(function
                           flex: 1,
                           margin: 2,
                         }}>
+                        {calendarImageSource ? (
+                          <Image
+                            source={calendarImageSource}
+                            resizeMode="cover"
+                            style={{
+                              position: 'absolute',
+                              width: pageWidth,
+                              height: (page.dates.length / 7) * (pageWidth / 7),
+                              left: -columnIndex * (pageWidth / 7),
+                              top: -rowIndex * (pageWidth / 7),
+                              opacity: isOutsideMonth ? 0.25 : 0.72,
+                            }}
+                          />
+                        ) : null}
+                        {isToday && !isSelected && todayStyle === 'inset' ? (
+                          <View
+                            pointerEvents="none"
+                            className="absolute inset-0 rounded-lg"
+                            style={{
+                              borderRadius: 8,
+                              boxShadow: 'inset 0px 3px 7px rgba(31, 42, 36, 0.3)',
+                            }}
+                          />
+                        ) : null}
                         <ThemedText
                           type="smallBold"
                           themeColor={isOutsideMonth ? 'textSecondary' : 'text'}
@@ -441,8 +477,9 @@ export const Calendar = forwardRef<CalendarMotionHandle, CalendarProps>(function
         minWidth: 0,
       }}>
       <View {...panResponder.panHandlers}>
-        <View className="h-9 flex-row items-center px-1">
-          <ThemedText type="smallBold">{monthLabel}</ThemedText>
+        <View className="h-9 flex-row items-center justify-between px-1">
+          <ThemedText type="smallBold">{headerTitle ?? monthLabel}</ThemedText>
+          {headerTrailing}
         </View>
 
         <View className="w-full min-w-0 flex-row">
@@ -450,7 +487,7 @@ export const Calendar = forwardRef<CalendarMotionHandle, CalendarProps>(function
             <View
               key={weekday}
               className="h-[30px] items-center justify-center"
-              style={{ width: pageWidth / 7 }}>
+              style={{ flex: 1 }}>
               <ThemedText type="small" themeColor="textSecondary">{weekday}</ThemedText>
             </View>
           ))}
@@ -461,20 +498,39 @@ export const Calendar = forwardRef<CalendarMotionHandle, CalendarProps>(function
           onLayout={(event) => {
             const nextWidth = event.nativeEvent.layout.width;
             if (nextWidth > 0 && Math.abs(nextWidth - pageWidth) > 0.5) {
+              const nextCellSize = nextWidth / 7;
+              cellSize.value = nextCellSize;
+              expandedGridHeight.value = getMonth(visibleDateRef.current).length / 7 * nextCellSize;
+              horizontalOffset.value = 0;
               setPageWidth(nextWidth);
             }
           }}
-          style={viewportStyle}>
-          <Animated.View
-            pointerEvents={buttonInteractive ? 'none' : 'auto'}
-            style={[{ position: 'absolute', top: 0, left: 0 }, monthLayerStyle]}>
-            {renderTrack(monthPages, true)}
-          </Animated.View>
-          <Animated.View
-            pointerEvents={buttonInteractive ? 'auto' : 'none'}
-            style={[{ position: 'absolute', top: 0, left: 0 }, weekLayerStyle]}>
-            {renderTrack(weekPages, false)}
-          </Animated.View>
+          style={[viewportStyle, { opacity: pageWidth > 0 ? 1 : 0 }]}>
+          {pageWidth > 0 && contentReady ? (
+            <>
+              <Animated.View
+                pointerEvents={buttonInteractive ? 'none' : 'auto'}
+                style={[{ position: 'absolute', top: 0, left: 0 }, monthLayerStyle]}>
+                {renderTrack(monthPages, true)}
+              </Animated.View>
+              <Animated.View
+                pointerEvents={buttonInteractive ? 'auto' : 'none'}
+                style={[{ position: 'absolute', top: 0, left: 0 }, weekLayerStyle]}>
+                {renderTrack(weekPages, false)}
+              </Animated.View>
+            </>
+          ) : (
+            <View className="w-full flex-row flex-wrap">
+              {currentMonthDates.map((date) => (
+                <View
+                  key={getDateKey(date)}
+                  className="p-0.5"
+                  style={{ aspectRatio: 1, width: '14.285714%' }}>
+                  <View className="flex-1 rounded-lg" style={{ backgroundColor: theme.primarySoft }} />
+                </View>
+              ))}
+            </View>
+          )}
         </Animated.View>
       </View>
 
