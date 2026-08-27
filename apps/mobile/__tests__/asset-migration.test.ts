@@ -6,6 +6,11 @@ jest.mock('@/storage/asset-storage', () => ({
   },
 }));
 
+jest.mock('@/observability/logger', () => ({
+  logEvent: jest.fn(),
+  reportError: jest.fn(),
+}));
+
 import { migrateLegacyPot } from '@/stores/asset-store';
 
 describe('asset persistence migration', () => {

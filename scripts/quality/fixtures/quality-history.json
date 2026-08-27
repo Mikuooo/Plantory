@@ -1,0 +1,77 @@
+{
+  "runs": [
+    {
+      "id": 101,
+      "event": "pull_request",
+      "headSha": "aaa",
+      "createdAt": "2026-08-04T10:00:00.000Z",
+      "firstAttempt": {
+        "attempt": 1,
+        "conclusion": "success",
+        "jobs": [{ "name": "harness", "steps": [{ "name": "Unit tests", "conclusion": "success" }] }]
+      },
+      "laterAttempts": []
+    },
+    {
+      "id": 102,
+      "event": "pull_request",
+      "headSha": "bbb",
+      "createdAt": "2026-08-12T10:00:00.000Z",
+      "firstAttempt": {
+        "attempt": 1,
+        "conclusion": "failure",
+        "jobs": [{ "name": "harness", "steps": [{ "name": "Unit tests", "conclusion": "failure" }] }]
+      },
+      "laterAttempts": [
+        {
+          "attempt": 2,
+          "jobs": [{ "name": "harness", "steps": [{ "name": "Unit tests", "conclusion": "success" }] }]
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "event": "pull_request",
+      "headSha": "ccc",
+      "createdAt": "2026-08-19T10:00:00.000Z",
+      "firstAttempt": { "attempt": 1, "conclusion": "cancelled", "jobs": [] },
+      "laterAttempts": []
+    },
+    {
+      "id": 104,
+      "event": "pull_request",
+      "headSha": "ddd",
+      "createdAt": "2026-08-24T10:00:00.000Z",
+      "firstAttempt": {
+        "attempt": 1,
+        "conclusion": "failure",
+        "jobs": [{ "name": "harness", "steps": [{ "name": "Unit tests", "conclusion": "failure" }] }]
+      },
+      "laterAttempts": []
+    },
+    {
+      "id": 105,
+      "event": "pull_request",
+      "headSha": "eee",
+      "createdAt": "2026-08-25T10:00:00.000Z",
+      "firstAttempt": {
+        "attempt": 1,
+        "conclusion": "failure",
+        "jobs": [{ "name": "harness", "steps": [{ "name": "Install dependencies", "conclusion": "failure" }] }]
+      },
+      "laterAttempts": []
+    },
+    {
+      "id": 106,
+      "event": "pull_request",
+      "headSha": "fff",
+      "createdAt": "2026-08-26T10:00:00.000Z",
+      "firstAttempt": {
+        "attempt": 1,
+        "conclusion": "failure",
+        "jobs": [{ "name": "harness", "steps": [{ "name": "Unit tests", "conclusion": "success" }] }]
+      },
+      "laterAttempts": []
+    }
+  ]
+}

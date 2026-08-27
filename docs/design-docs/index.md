@@ -11,4 +11,7 @@ Each document records:
 - verification and evidence requirements;
 - status: proposed, approved, implemented, or superseded.
 
-No design documents are active yet.
+## Implemented
+
+- [Mobile observability](./mobile-observability.md): structured logs, error
+  boundaries, Sentry crash reporting, privacy filtering, and correlation IDs.

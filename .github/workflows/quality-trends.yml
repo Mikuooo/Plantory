@@ -1,0 +1,40 @@
+name: Quality Trends
+
+on:
+  schedule:
+    - cron: '17 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4.3.1
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 22
+
+      - name: Build quality trend report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/quality/quality-trends.mjs
+
+      - name: Publish job summary
+        run: cat .artifacts/quality-trends.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload quality trend evidence
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: quality-trends-${{ github.run_id }}
+          path: |
+            .artifacts/quality-trends.json
+            .artifacts/quality-trends.md
+          retention-days: 90

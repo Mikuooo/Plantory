@@ -4,13 +4,20 @@ import React from 'react';
 
 import '@/global.css';
 
+import { AppErrorScreen } from '@/components/app-error-screen';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { appStackRoutes } from '@/components/navigation-config';
+import { usePreferencesHydrated } from '@/hooks/use-preferences';
 import { useResolvedColorScheme } from '@/hooks/use-resolved-color-scheme';
-import { usePreferencesStore } from '@/stores/preferences-store';
+import { initializeObservability, withObservability } from '@/observability/sentry';
 
-export default function RootLayout() {
+initializeObservability();
+
+export const ErrorBoundary = AppErrorScreen;
+
+function RootLayout() {
   const colorScheme = useResolvedColorScheme();
-  const preferencesHydrated = usePreferencesStore((state) => state.hasHydrated);
+  const preferencesHydrated = usePreferencesHydrated();
 
   if (!preferencesHydrated) {
     return <AnimatedSplashOverlay />;
@@ -24,17 +31,12 @@ export default function RootLayout() {
           animation: 'simple_push',
           headerShown: false,
         }}>
-        <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
-        <Stack.Screen name="assets/pots" />
-        <Stack.Screen name="assets/pots/new" />
-        <Stack.Screen name="assets/pots/[id]" />
-        <Stack.Screen name="assets/pots/[id]/edit" />
-        <Stack.Screen name="assets/media" />
-        <Stack.Screen name="assets/fertilizers" />
-        <Stack.Screen name="assets/pesticides" />
-        <Stack.Screen name="plants/[id]/care" />
-        <Stack.Screen name="plants/[id]/v2" />
+        {appStackRoutes.map(({ name, animation }) => (
+          <Stack.Screen key={name} name={name} options={animation ? { animation } : undefined} />
+        ))}
       </Stack>
     </ThemeProvider>
   );
 }
+
+export default withObservability(RootLayout);

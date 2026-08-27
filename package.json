@@ -10,10 +10,15 @@
     "check:repo": "node scripts/harness/check-repo.mjs",
     "check:docs": "node scripts/harness/check-docs.mjs",
     "check:architecture": "node scripts/harness/check-architecture.mjs",
+    "check:expo": "node scripts/harness/check-expo-compatibility.mjs",
+    "test:architecture-harness": "node scripts/harness/check-architecture.test.mjs",
+    "test:e2e-harness": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/harness/process-runner.test.ps1",
+    "quality:trends": "node scripts/quality/quality-trends.mjs",
+    "test:quality-trends": "node --test scripts/quality/quality-trends.test.mjs",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "harness:check": "pnpm check:repo && pnpm check:docs && pnpm check:architecture && pnpm lint && pnpm typecheck && pnpm test",
+    "harness:check": "pnpm check:repo && pnpm check:docs && pnpm test:architecture-harness && pnpm check:architecture && pnpm check:expo && pnpm test:e2e-harness && pnpm test:quality-trends && pnpm lint && pnpm typecheck && pnpm test",
     "e2e:android": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/harness/run-maestro-android.ps1"
   },
   "devDependencies": {

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, extname, join, relative, resolve } from 'node:path';
+import { validateDefectLedger, validateDocumentRegistry } from '../quality/quality-trends.mjs';
 
 const root = resolve(import.meta.dirname, '..', '..');
 const docs = ['AGENTS.md', 'ARCHITECTURE.md', ...walk(join(root, 'docs'))
@@ -32,12 +33,25 @@ const requiredKnowledge = [
   'ARCHITECTURE.md',
   'docs/core-beliefs.md',
   'docs/quality.md',
+  'docs/quality-trends.md',
   'docs/testing.md',
   'docs/design-docs/index.md',
   'docs/exec-plans/README.md',
 ];
 for (const relativePath of requiredKnowledge) {
   if (!existsSync(join(root, relativePath))) failures.push(`Missing knowledge file: ${relativePath}`);
+}
+
+try {
+  const registry = JSON.parse(readFileSync(join(root, 'docs/quality/document-freshness.json'), 'utf8'));
+  validateDocumentRegistry(registry);
+  for (const document of registry.documents) {
+    if (!existsSync(join(root, document.path))) failures.push(`Freshness registry references missing document: ${document.path}`);
+  }
+  const defects = JSON.parse(readFileSync(join(root, 'docs/quality/escaped-defects.json'), 'utf8'));
+  validateDefectLedger(defects);
+} catch (error) {
+  failures.push(`Invalid quality governance data: ${error.message}`);
 }
 
 if (failures.length) {

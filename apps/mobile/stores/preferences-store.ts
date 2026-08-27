@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { Platform } from 'react-native';
 
+import { logEvent, reportError } from '@/observability/logger';
 import { preferencesStorage } from '@/storage/preferences-storage';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
@@ -32,8 +33,10 @@ export const usePreferencesStore = create<PreferencesState>()(
         themePreference,
         calendarExpanded,
       }),
-      onRehydrateStorage: () => () => {
+      onRehydrateStorage: () => (_state, error) => {
         usePreferencesStore.setState({ hasHydrated: true });
+        if (error) reportError(error, 'preferences.hydration.failed');
+        else logEvent('info', 'preferences.hydration.completed');
       },
       version: 1,
     },

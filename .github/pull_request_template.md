@@ -26,3 +26,5 @@ Commands and evidence:
 
 - [ ] Architecture, commands, routes, schemas, and environment documentation remain accurate
 - [ ] New review guidance was encoded in docs or an executable check when durable
+- [ ] Reviewed documents append a date in `docs/quality/document-freshness.json`, or no registered document was reviewed
+- [ ] Post-merge defects are recorded in `docs/quality/escaped-defects.json`, or this change is not an escaped-defect repair

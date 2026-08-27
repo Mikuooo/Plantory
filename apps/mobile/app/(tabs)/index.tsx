@@ -7,8 +7,8 @@ import { HeaderBar } from '@/components/header-bar';
 import { AppIcon } from '@/components/icons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useCalendarPreferences } from '@/hooks/use-preferences';
 import { useTheme } from '@/hooks/use-theme';
-import { usePreferencesStore } from '@/stores/preferences-store';
 
 const actions = ['浇水', '施肥', '修剪', '拍照'];
 const today = new Date();
@@ -18,8 +18,7 @@ export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState(todayKey);
   const [done, setDone] = useState<Record<string, boolean>>({ water: false, check: true });
   const calendarRef = useRef<CalendarMotionHandle>(null);
-  const calendarExpanded = usePreferencesStore((state) => state.calendarExpanded);
-  const setCalendarExpanded = usePreferencesStore((state) => state.setCalendarExpanded);
+  const { calendarExpanded, setCalendarExpanded } = useCalendarPreferences();
   const pagePanResponder = useMemo(() => PanResponder.create({
     onMoveShouldSetPanResponderCapture: (_, gesture) => (
       calendarExpanded

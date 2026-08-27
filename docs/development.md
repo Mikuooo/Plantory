@@ -23,6 +23,7 @@ apps/mobile/
 ├── components/          可复用 UI 组件
 ├── constants/           主题和常量
 ├── hooks/               通用 Hooks
+├── observability/       结构化日志、关联 ID 和崩溃报告适配
 ├── assets/              图片和应用资源
 ├── scripts/             工具脚本
 ├── app.json             Expo 配置
@@ -113,7 +114,19 @@ Expo 原生模块必须使用 `expo install`，由 Expo 根据 SDK 55 选择兼�
 
 照片从相机或相册取得后，必须复制到持久目录，再把稳定 URI 写入业务记录；不能直接依赖相机返回的临时 URI。
 
-发布阶段再加入 `expo-dev-client`、EAS Build/Update、错误监控和端到端测试。3D、社区、地图和 AI 识别不应阻塞植物记录主流程。
+发布阶段再加入 `expo-dev-client` 和 EAS Build/Update。错误监控已通过 Sentry 接入，端到端测试由 Maestro 提供本地设备门禁。3D、社区、地图和 AI 识别不应阻塞植物记录主流程。
+
+### 可观测性
+
+复制 `.env.example` 中需要的变量到本地忽略的环境文件。应用在没有
+`EXPO_PUBLIC_SENTRY_DSN` 时保持远程报告关闭；本地 JSON 日志和错误恢复页
+仍然工作。`SENTRY_AUTH_TOKEN` 不得写入 `.env.example` 或提交到 Git，正式
+构建时应使用 EAS sensitive secret。
+
+业务流程通过 `observability/logger.ts` 创建 correlation ID。只记录类别、
+操作模式、数量、结果和耗时等运行信息，不记录名称、备注、照片地址、凭据
+或完整业务对象。原生崩溃捕获和 source map 变更需要重新构建应用，普通
+JavaScript 日志改动可以继续使用 Fast Refresh。
 
 ## 5. 架构边界
 
@@ -123,6 +136,7 @@ Expo 原生模块必须使用 `expo install`，由 Expo 根据 SDK 55 选择兼�
 - API 请求应集中在 `packages/api-client`。
 - 数据类型放入 `packages/types`，供手机端、后台和后端复用。
 - 后端权限必须在服务端或数据库 RLS 边界校验，不能只依赖客户端隐藏按钮。
+- 功能代码依赖可观测性抽象，不直接散布 Sentry SDK 调用。
 
 ## 6. 产品数据边界
 

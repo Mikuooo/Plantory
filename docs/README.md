@@ -7,6 +7,7 @@ Plantory（中文名：植迹）是一款以植物成长和养护记录为核心
 - [开发文档](./development.md)：项目结构、启动命令、开发约定和扩展边界
 - [核心信念](./core-beliefs.md)：稳定的产品与工程不变量
 - [质量评分](./quality.md)：自动化门禁、缺口和升级条件
+- [质量趋势](./quality-trends.md)：CI、测试波动、文档陈旧和逃逸缺陷趋势
 - [测试与证据](./testing.md)：确定性检查与 Android 真机验收
 - [设计文档](./design-docs/index.md)：跨层技术决策
 - [执行计划](./exec-plans/README.md)：长周期任务状态与证据

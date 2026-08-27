@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "documents": [
+    {
+      "path": "ARCHITECTURE.md",
+      "owner": "engineering",
+      "maxAgeDays": 90,
+      "reviews": ["2026-08-28"]
+    },
+    {
+      "path": "docs/core-beliefs.md",
+      "owner": "product-engineering",
+      "maxAgeDays": 180,
+      "reviews": ["2026-08-28"]
+    },
+    {
+      "path": "docs/quality.md",
+      "owner": "engineering",
+      "maxAgeDays": 30,
+      "reviews": ["2026-08-28"]
+    },
+    {
+      "path": "docs/testing.md",
+      "owner": "engineering",
+      "maxAgeDays": 90,
+      "reviews": ["2026-08-28"]
+    },
+    {
+      "path": "docs/design-docs/index.md",
+      "owner": "engineering",
+      "maxAgeDays": 90,
+      "reviews": ["2026-08-28"]
+    },
+    {
+      "path": "docs/exec-plans/README.md",
+      "owner": "engineering",
+      "maxAgeDays": 90,
+      "reviews": ["2026-08-28"]
+    }
+  ]
+}

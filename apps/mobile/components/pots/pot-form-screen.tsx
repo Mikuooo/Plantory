@@ -10,6 +10,7 @@ import { potColors, potMaterials, purchaseMethods } from '@/components/pots/pot-
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
+import { startFlow } from '@/observability/logger';
 import { type PotAssetDraft, type PotAssetItem, type PotMaterial, type PotShape, type PurchaseMethod, useAssetStore } from '@/stores/asset-store';
 
 type PotFormState = {
@@ -56,13 +57,21 @@ export function PotFormScreen({ potId }: { potId?: string }) {
       setError(result.error);
       return;
     }
-    if (pot) {
-      updatePot(pot.id, result.draft);
-      router.back();
-      return;
+    const flow = startFlow('asset.pot.save', { mode: pot ? 'update' : 'create' });
+    try {
+      if (pot) {
+        updatePot(pot.id, result.draft, flow.context);
+        flow.complete({ result: 'state_updated' });
+        router.back();
+        return;
+      }
+      const id = addPot(result.draft, flow.context);
+      flow.complete({ result: 'state_updated' });
+      router.replace({ pathname: '/assets/pots/[id]', params: { id } });
+    } catch (saveError) {
+      flow.fail(saveError);
+      setError('保存失败，请重试');
     }
-    const id = addPot(result.draft);
-    router.replace({ pathname: '/assets/pots/[id]', params: { id } });
   };
 
   return (

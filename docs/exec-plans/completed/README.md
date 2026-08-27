@@ -1,3 +1,3 @@
 # Completed Execution Plans
 
-No completed execution plans are checked in.
+- [Mobile architecture hardening](./mobile-architecture-hardening.md)

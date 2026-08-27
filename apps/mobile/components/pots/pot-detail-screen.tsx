@@ -9,6 +9,7 @@ import { formatCapacity, formatPotDimensions, formatPrice, getPotMaterialLabel, 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
+import { startFlow } from '@/observability/logger';
 import { type PotAssetItem, useAssetStore } from '@/stores/asset-store';
 
 export function PotDetailScreen({ potId }: { potId: string }) {
@@ -43,7 +44,21 @@ export function PotDetailScreen({ potId }: { potId: string }) {
 
   const confirmDelete = () => Alert.alert('删除花盆', `确定删除“${pot.name}”吗？此操作无法撤销。`, [
     { text: '取消', style: 'cancel' },
-    { text: '删除', style: 'destructive', onPress: () => { removeItem(pot.id); router.replace('/assets/pots'); } },
+    {
+      text: '删除',
+      style: 'destructive',
+      onPress: () => {
+        const flow = startFlow('asset.pot.delete');
+        try {
+          removeItem(pot.id, flow.context);
+          flow.complete({ result: 'state_updated' });
+          router.replace('/assets/pots');
+        } catch (error) {
+          flow.fail(error);
+          Alert.alert('删除失败', '花盆暂时无法删除，请重试。');
+        }
+      },
+    },
   ]);
 
   return (

@@ -7,12 +7,12 @@ added, removed, or materially changes confidence.
 | --- | --- | --- | --- |
 | Type safety | green | `pnpm typecheck` | Runtime input validation is not established |
 | Lint | green | `pnpm lint` | No component complexity limit yet |
-| Unit tests | yellow | `pnpm test` | Initial coverage targets assets and navigation |
-| Architecture | yellow | `pnpm check:architecture` | Existing route-local screen logic is baseline debt |
+| Unit tests | yellow | `pnpm test`: asset CRUD, persistence recovery, navigation, and observability | Plant, care, growth, photo, and todo persistence are not implemented yet |
+| Architecture | yellow | Complexity, dependency, persistence-boundary, cycle, and negative rule checks | Deterministic locally; no CI owner is configured yet |
 | Documentation | yellow | `pnpm check:docs` | Freshness is reviewed, not inferred automatically |
 | Native E2E | yellow | Maestro flows under `.maestro/` | Local physical-device gate; not PR-blocking yet |
-| Expo compatibility | yellow | `pnpm --filter plantory exec expo install --check` | SDK 55 patch-level drift is present and requires a dedicated upgrade change |
-| Observability | red | None | No structured application logging or crash reporting |
+| Expo compatibility | green | `pnpm check:expo` in `pnpm harness:check` | No known SDK 55 compatibility drift |
+| Observability | yellow | Logger/Sentry unit tests and root error boundary | Release crash event and source-map symbolication require configured Sentry credentials |
 | Backend security | not applicable | None | Backend is not implemented |
 
 ## Promotion Rules
@@ -26,10 +26,16 @@ added, removed, or materially changes confidence.
 
 ## Delivery Metrics
 
-Review monthly once enough changes exist:
+The `Quality Trends` workflow publishes a rolling 12-week report every Monday.
+Metric contracts and the local fixture command are defined in
+[`quality-trends.md`](./quality-trends.md).
 
-- first-pass rate for `pnpm harness:check`;
-- flaky-check rate;
-- escaped defects found after merge;
-- changes requiring undocumented human context;
-- age of active execution plans and unresolved quality gaps.
+- CI first-pass rate measures completed first attempts of the `Quality` workflow.
+- Test flake rate requires a failed `Unit tests` step to pass on a rerun of the
+  same workflow run and commit.
+- Document staleness uses explicit review history and per-document age limits.
+- Escaped defects are defects first detected after the responsible change was
+  merged or released.
+
+Cancelled and skipped runs do not enter a denominator. Missing or inaccessible
+Actions data fails report generation instead of being treated as a zero value.

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { logEvent, type OperationContext, reportError } from '@/observability/logger';
 import { assetStorage } from '@/storage/asset-storage';
 
 export type AssetCategory = 'pots' | 'media' | 'fertilizers' | 'pesticides';
@@ -55,11 +56,11 @@ export type PotAssetDraft = Omit<PotAssetItem, 'id' | 'category' | 'updatedAt'>;
 type AssetState = {
   items: AssetItem[];
   hasHydrated: boolean;
-  addItem: (category: GeneralAssetCategory, draft: AssetDraft) => void;
-  updateItem: (id: string, draft: AssetDraft) => void;
-  addPot: (draft: PotAssetDraft) => string;
-  updatePot: (id: string, draft: PotAssetDraft) => void;
-  removeItem: (id: string) => void;
+  addItem: (category: GeneralAssetCategory, draft: AssetDraft, context?: OperationContext) => void;
+  updateItem: (id: string, draft: AssetDraft, context?: OperationContext) => void;
+  addPot: (draft: PotAssetDraft, context?: OperationContext) => string;
+  updatePot: (id: string, draft: PotAssetDraft, context?: OperationContext) => void;
+  removeItem: (id: string, context?: OperationContext) => void;
   setHasHydrated: (hasHydrated: boolean) => void;
 };
 
@@ -70,23 +71,29 @@ export const useAssetStore = create<AssetState>()(
     (set) => ({
       items: [],
       hasHydrated: false,
-      addItem: (category, draft) => set((state) => ({
-        items: [
-          ...state.items,
-          {
-            id: createAssetId(),
-            category,
-            ...draft,
-            updatedAt: new Date().toISOString(),
-          },
-        ],
-      })),
-      updateItem: (id, draft) => set((state) => ({
-        items: state.items.map((item) => item.id === id && item.category !== 'pots'
-          ? { ...item, ...draft, updatedAt: new Date().toISOString() }
-          : item),
-      })),
-      addPot: (draft) => {
+      addItem: (category, draft, context) => {
+        set((state) => ({
+          items: [
+            ...state.items,
+            {
+              id: createAssetId(),
+              category,
+              ...draft,
+              updatedAt: new Date().toISOString(),
+            },
+          ],
+        }));
+        logAssetMutation('asset.created', category, context);
+      },
+      updateItem: (id, draft, context) => {
+        set((state) => ({
+          items: state.items.map((item) => item.id === id && item.category !== 'pots'
+            ? { ...item, ...draft, updatedAt: new Date().toISOString() }
+            : item),
+        }));
+        logAssetMutation('asset.updated', 'general', context);
+      },
+      addPot: (draft, context) => {
         const id = createAssetId();
         set((state) => ({
           items: [...state.items, {
@@ -96,24 +103,35 @@ export const useAssetStore = create<AssetState>()(
             updatedAt: new Date().toISOString(),
           }],
         }));
+        logAssetMutation('asset.created', 'pots', context);
         return id;
       },
-      updatePot: (id, draft) => set((state) => ({
-        items: state.items.map((item) => item.id === id && item.category === 'pots'
-          ? { ...item, ...draft, updatedAt: new Date().toISOString() }
-          : item),
-      })),
-      removeItem: (id) => set((state) => ({
-        items: state.items.filter((item) => item.id !== id),
-      })),
+      updatePot: (id, draft, context) => {
+        set((state) => ({
+          items: state.items.map((item) => item.id === id && item.category === 'pots'
+            ? { ...item, ...draft, updatedAt: new Date().toISOString() }
+            : item),
+        }));
+        logAssetMutation('asset.updated', 'pots', context);
+      },
+      removeItem: (id, context) => {
+        let category: AssetCategory | undefined;
+        set((state) => {
+          category = state.items.find((item) => item.id === id)?.category;
+          return { items: state.items.filter((item) => item.id !== id) };
+        });
+        logAssetMutation('asset.deleted', category ?? 'unknown', context);
+      },
       setHasHydrated: (hasHydrated) => set({ hasHydrated }),
     }),
     {
       name: 'plantory-assets',
       storage: createJSONStorage(() => assetStorage),
       partialize: ({ items }) => ({ items }),
-      onRehydrateStorage: () => () => {
+      onRehydrateStorage: () => (state, error) => {
         useAssetStore.setState({ hasHydrated: true });
+        if (error) reportError(error, 'asset.hydration.failed');
+        else logEvent('info', 'asset.hydration.completed', { itemCount: state?.items.length ?? 0 });
       },
       migrate: (persistedState, version) => {
         if (version >= 2) return persistedState as AssetState;
@@ -152,4 +170,8 @@ export function migrateLegacyPot(item: Record<string, unknown>): PotAssetItem {
     appearance: { color: '#B56A42', material: 'terracotta' },
     updatedAt: String(item.updatedAt ?? new Date().toISOString()),
   };
+}
+
+function logAssetMutation(event: string, category: string, context?: OperationContext) {
+  logEvent('info', event, { category, result: 'state_updated' }, context?.correlationId);
 }
