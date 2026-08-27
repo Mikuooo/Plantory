@@ -41,16 +41,25 @@ app/
 │   └── archive.tsx
 ├── assets/
 │   ├── pots.tsx
+│   ├── pots/
+│   │   ├── new.tsx
+│   │   ├── [id].tsx
+│   │   └── [id]/edit.tsx
 │   ├── media.tsx
 │   ├── fertilizers.tsx
 │   └── pesticides.tsx
-├── plant/[id].tsx
-└── record/new.tsx
+└── plants/
+    ├── [id].tsx
+    └── [id]/
+        ├── care.tsx
+        └── v2.tsx
 ```
 
 根布局使用 Stack，`(tabs)` 路由组承载日历、植物和归档三个底部标签页。全屏侧边栏不重复展示标签页入口，只提供花盆、介质、肥料和农药四个资产入口；每个入口进入独立页面，资产页面不显示底部标签栏。
 
 ## 3. 本地开发
+
+需要 Node.js 20.19 或更高版本，并使用根 `package.json` 固定的 pnpm 版本。
 
 在仓库根目录执行：
 
@@ -73,6 +82,7 @@ pnpm --filter plantory android
 pnpm --filter plantory ios
 pnpm --filter plantory web
 pnpm --filter plantory lint
+pnpm harness:check
 ```
 
 ## 4. 推荐扩展

@@ -1,0 +1,19 @@
+appId: host.exp.exponent
+name: Plantory primary navigation smoke
+env:
+  EXPO_URL: ${EXPO_URL || "exp://127.0.0.1:8081/--/"}
+---
+- stopApp
+- openLink: ${EXPO_URL}
+- assertVisible: "日历 · 今天"
+- tapOn: "植物"
+- assertVisible: "植物"
+- tapOn: "归档"
+- assertVisible: "归档"
+- tapOn: "日历"
+- tapOn: "打开资产侧边栏"
+- assertVisible: "资产"
+- tapOn:
+    text: "进入花盆资产页面，共 .* 项"
+- assertVisible: "花盆"
+- takeScreenshot: "navigation-smoke-pot-list"

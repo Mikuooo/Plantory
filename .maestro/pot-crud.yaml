@@ -1,0 +1,37 @@
+appId: host.exp.exponent
+name: Plantory pot asset lifecycle
+env:
+  EXPO_URL: ${EXPO_URL || "exp://127.0.0.1:8081/--/"}
+---
+- stopApp
+- openLink: ${EXPO_URL}
+- assertVisible: "日历 · 今天"
+- tapOn: "打开资产侧边栏"
+- tapOn:
+    text: "进入花盆资产页面，共 .* 项"
+- tapOn: "新增花盆"
+- assertVisible: "新增花盆"
+- tapOn: "花盆名称"
+- setClipboard: "HarnessPot"
+- pasteText
+- hideKeyboard
+- tapOn: "保存花盆"
+- assertVisible: "HarnessPot"
+- tapOn: "编辑"
+- assertVisible: "编辑花盆"
+- tapOn: "花盆名称"
+- eraseText
+- setClipboard: "HarnessAcceptedPot"
+- pasteText
+- hideKeyboard
+- tapOn: "保存花盆"
+- assertVisible: "HarnessAcceptedPot"
+- scrollUntilVisible:
+    element: "删除花盆"
+    direction: DOWN
+- tapOn: "删除花盆"
+- assertVisible: "确定删除“HarnessAcceptedPot”吗？此操作无法撤销。"
+- tapOn: "删除"
+- assertVisible: "花盆"
+- assertNotVisible: "HarnessAcceptedPot"
+- takeScreenshot: "pot-list-after-delete"

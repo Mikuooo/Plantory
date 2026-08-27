@@ -1,0 +1,9 @@
+appId: host.exp.exponent
+name: Plantory pot fallback stage save and edit
+---
+- assertVisible: "新增花盆"
+- tapOn: "保存花盆"
+- assertVisible: "HarnessPot"
+- tapOn: "编辑"
+- assertVisible: "编辑花盆"
+- tapOn: "花盆名称"

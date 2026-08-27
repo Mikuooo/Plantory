@@ -130,7 +130,7 @@ export const useAssetStore = create<AssetState>()(
   ),
 );
 
-function migrateLegacyPot(item: Record<string, unknown>): PotAssetItem {
+export function migrateLegacyPot(item: Record<string, unknown>): PotAssetItem {
   return {
     id: String(item.id),
     category: 'pots',

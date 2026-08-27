@@ -1,0 +1,15 @@
+appId: host.exp.exponent
+name: Plantory pot fallback stage save and delete
+---
+- assertVisible: "编辑花盆"
+- tapOn: "保存花盆"
+- assertVisible: "HarnessAcceptedPot"
+- scrollUntilVisible:
+    element: "删除花盆"
+    direction: DOWN
+- tapOn: "删除花盆"
+- assertVisible: "确定删除“HarnessAcceptedPot”吗？此操作无法撤销。"
+- tapOn: "删除"
+- assertVisible: "花盆"
+- assertNotVisible: "HarnessAcceptedPot"
+- takeScreenshot: "pot-list-after-delete"
