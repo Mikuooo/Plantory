@@ -34,6 +34,20 @@ function ConvertTo-ProcessArgument {
 function Stop-ProcessTree {
   param([Parameter(Mandatory = $true)][int]$ProcessId)
 
+  $rootProcess = Get-Process -Id $ProcessId -ErrorAction SilentlyContinue
+  if (-not $rootProcess) {
+    return
+  }
+
+  if ($PSVersionTable.PSVersion.Major -ge 7) {
+    $rootProcess.Kill($true)
+    return
+  }
+
+  if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
+    throw 'Process-tree cleanup requires PowerShell 7 on non-Windows systems.'
+  }
+
   $processes = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue)
   $childrenByParent = @{}
   foreach ($process in $processes) {
@@ -41,7 +55,7 @@ function Stop-ProcessTree {
     if (-not $childrenByParent.ContainsKey($parentId)) {
       $childrenByParent[$parentId] = [Collections.Generic.List[int]]::new()
     }
-    $childrenByParent[$parentId].Add([int]$process.ProcessId)
+    [void]$childrenByParent[$parentId].Add([int]$process.ProcessId)
   }
 
   $orderedIds = [Collections.Generic.List[int]]::new()
@@ -83,10 +97,16 @@ function Invoke-BoundedProcess {
     }
   }
 
-  $arguments = ($ArgumentList | ForEach-Object { ConvertTo-ProcessArgument $_ }) -join ' '
+  $displayArguments = ($ArgumentList | ForEach-Object { ConvertTo-ProcessArgument $_ }) -join ' '
   $startInfo = [Diagnostics.ProcessStartInfo]::new()
   $startInfo.FileName = $FilePath
-  $startInfo.Arguments = $arguments
+  if ($startInfo.PSObject.Properties.Name -contains 'ArgumentList') {
+    foreach ($argument in $ArgumentList) {
+      $startInfo.ArgumentList.Add($argument)
+    }
+  } else {
+    $startInfo.Arguments = $displayArguments
+  }
   $startInfo.WorkingDirectory = $WorkingDirectory
   $startInfo.UseShellExecute = $false
   $startInfo.CreateNoWindow = $true
@@ -116,7 +136,7 @@ function Invoke-BoundedProcess {
   [IO.File]::WriteAllText($StandardErrorPath, $standardError, [Text.UTF8Encoding]::new($false))
 
   [pscustomobject]@{
-    Command = "$FilePath $arguments"
+    Command = "$FilePath $displayArguments"
     ExitCode = if ($completed) { $process.ExitCode } else { $null }
     TimedOut = -not $completed
     DurationMilliseconds = $stopwatch.ElapsedMilliseconds

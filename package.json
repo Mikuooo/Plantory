@@ -12,7 +12,7 @@
     "check:architecture": "node scripts/harness/check-architecture.mjs",
     "check:expo": "node scripts/harness/check-expo-compatibility.mjs",
     "test:architecture-harness": "node scripts/harness/check-architecture.test.mjs",
-    "test:e2e-harness": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/harness/process-runner.test.ps1",
+    "test:e2e-harness": "pwsh -NoProfile -File scripts/harness/process-runner.test.ps1",
     "quality:trends": "node scripts/quality/quality-trends.mjs",
     "test:quality-trends": "node --test scripts/quality/quality-trends.test.mjs",
     "lint": "turbo run lint",

@@ -3,6 +3,10 @@ $ErrorActionPreference = 'Stop'
 
 $testDirectory = Join-Path ([IO.Path]::GetTempPath()) "plantory-process-runner-$([Guid]::NewGuid())"
 New-Item -ItemType Directory -Path $testDirectory | Out-Null
+$shellPath = (Get-Process -Id $PID).Path
+if (-not $shellPath) {
+  throw 'Unable to resolve the current PowerShell executable.'
+}
 
 function Assert-Equal {
   param($Actual, $Expected, [string]$Message)
@@ -13,7 +17,7 @@ function Assert-Equal {
 
 try {
   $success = Invoke-BoundedProcess `
-    -FilePath 'powershell.exe' `
+    -FilePath $shellPath `
     -ArgumentList @('-NoProfile', '-Command', "Write-Output 'runner-ok'") `
     -TimeoutSeconds 5 `
     -WorkingDirectory $testDirectory `
@@ -24,7 +28,7 @@ try {
   Assert-Equal -Actual $success.StandardOutput.Trim() -Expected 'runner-ok' -Message 'Successful command output was not captured.'
 
   $failure = Invoke-BoundedProcess `
-    -FilePath 'powershell.exe' `
+    -FilePath $shellPath `
     -ArgumentList @('-NoProfile', '-Command', 'exit 7') `
     -TimeoutSeconds 5 `
     -WorkingDirectory $testDirectory `
@@ -34,7 +38,7 @@ try {
   Assert-Equal -Actual $failure.ExitCode -Expected 7 -Message 'Failing command returned the wrong exit code.'
 
   $timeout = Invoke-BoundedProcess `
-    -FilePath 'powershell.exe' `
+    -FilePath $shellPath `
     -ArgumentList @('-NoProfile', '-Command', 'Start-Sleep -Seconds 10') `
     -TimeoutSeconds 1 `
     -WorkingDirectory $testDirectory `
