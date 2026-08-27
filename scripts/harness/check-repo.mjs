@@ -16,6 +16,16 @@ for (const relativePath of required) {
   if (!existsSync(join(root, relativePath))) failures.push(`Missing repository guide: ${relativePath}`);
 }
 
+const cssModuleTypesPath = join(root, 'apps/mobile/css-modules.d.ts');
+if (!existsSync(cssModuleTypesPath)) {
+  failures.push('Missing CSS Modules declaration: apps/mobile/css-modules.d.ts');
+} else {
+  const cssModuleTypes = readFileSync(cssModuleTypesPath, 'utf8');
+  if (!/declare\s+module\s+['"]\*\.module\.css['"]/.test(cssModuleTypes)) {
+    failures.push('apps/mobile/css-modules.d.ts must declare the *.module.css module pattern.');
+  }
+}
+
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const mobilePackageJson = JSON.parse(readFileSync(join(root, 'apps/mobile/package.json'), 'utf8'));
 if (packageJson.name === mobilePackageJson.name) {
