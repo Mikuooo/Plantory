@@ -28,10 +28,10 @@ jobs:
         run: node scripts/quality/quality-trends.mjs
 
       - name: Publish job summary
-        run: cat .artifacts/quality-trends.md >> "$GITHUB_STEP_SUMMARY"
+        run: cat .artifacts/quality-trends.md | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload quality trend evidence
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: quality-trends-${{ github.run_id }}
           path: |
