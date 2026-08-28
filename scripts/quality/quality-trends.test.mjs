@@ -8,8 +8,8 @@ const fixture = JSON.parse(await readFile(new URL('./fixtures/quality-history.js
 const registry = {
   schemaVersion: 1,
   documents: [
-    { path: 'fresh.md', owner: 'engineering', maxAgeDays: 30, reviews: ['2026-08-20'] },
-    { path: 'stale.md', owner: 'engineering', maxAgeDays: 10, reviews: ['2026-07-01'] },
+    { path: 'fresh.md', owner: '@plantory/engineering', maxAgeDays: 30, reviews: ['2026-08-20'] },
+    { path: 'stale.md', owner: '@plantory/engineering', maxAgeDays: 10, reviews: ['2026-07-01'] },
   ],
 };
 const defects = {
@@ -62,7 +62,7 @@ test('uses review history to reproduce an earlier document state', () => {
     schemaVersion: 1,
     documents: [{
       path: 'contract.md',
-      owner: 'engineering',
+      owner: '@plantory/engineering',
       maxAgeDays: 30,
       reviews: ['2026-01-01', '2026-08-20'],
     }],
@@ -84,7 +84,7 @@ test('does not mark a document overdue on its exact review boundary', () => {
     runs: [],
     documentRegistry: {
       schemaVersion: 1,
-      documents: [{ path: 'boundary.md', owner: 'engineering', maxAgeDays: 30, reviews: ['2026-07-29'] }],
+      documents: [{ path: 'boundary.md', owner: '@plantory/engineering', maxAgeDays: 30, reviews: ['2026-07-29'] }],
     },
     defectLedger: { schemaVersion: 1, defects: [] },
     asOf: '2026-08-28T00:00:00.000Z',
@@ -98,8 +98,12 @@ test('does not mark a document overdue on its exact review boundary', () => {
 test('rejects invalid governance records', () => {
   assert.throws(() => validateDocumentRegistry({
     schemaVersion: 1,
-    documents: [{ path: 'a.md', owner: 'engineering', maxAgeDays: 30, reviews: ['2026-02-30'] }],
+    documents: [{ path: 'a.md', owner: '@plantory/engineering', maxAgeDays: 30, reviews: ['2026-02-30'] }],
   }), /valid date/);
+  assert.throws(() => validateDocumentRegistry({
+    schemaVersion: 1,
+    documents: [{ path: 'a.md', owner: 'engineering', maxAgeDays: 30, reviews: ['2026-08-20'] }],
+  }), /GitHub user or team handle/);
   assert.throws(() => validateDefectLedger({
     schemaVersion: 1,
     defects: [{ id: 'ESC-1', detectedAt: '2026-08-20', severity: 'S5', status: 'open', source: 'issue:1' }],

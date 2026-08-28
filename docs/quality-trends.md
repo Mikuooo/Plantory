@@ -29,7 +29,8 @@ the owner, maximum review age, and ascending review history for durable
 documents. The report shows the overdue-document ratio, P90 overdue days, and
 maximum overdue days. Editing a document does not imply that its contract was
 reviewed; append a review date only after comparing it with the implemented
-source of truth.
+source of truth. Every registry owner must be a GitHub user or team handle that
+appears in `.github/CODEOWNERS`.
 
 ### Escaped Defects
 
@@ -67,3 +68,18 @@ node scripts/quality/quality-trends.mjs --fixture scripts/quality/fixtures/quali
 Live generation requires `GITHUB_REPOSITORY` and a `GITHUB_TOKEN` with read
 access to Actions. API or permission failures stop the report rather than
 publishing partial metrics.
+
+## Live Acceptance
+
+The scheduled workflow is accepted only after the same default-branch source
+has passed the `Quality` workflow and a manual `Quality Trends` dispatch has:
+
+1. completed successfully with read-only `actions` and `contents` permissions;
+2. published a non-empty job summary;
+3. uploaded matching JSON and Markdown evidence with 90-day retention;
+4. reported a non-zero CI first-pass denominator when eligible Quality runs
+   exist in the rolling window.
+
+The report is maintained by `@Mikuooo` under the soft-responsibility contract in
+[`ownership.md`](./ownership.md). A missing owner response does not convert
+missing or inaccessible Actions data into a passing report.

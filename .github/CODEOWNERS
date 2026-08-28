@@ -1,0 +1,14 @@
+# Default review routing. Ownership is advisory; see docs/ownership.md.
+* @Mikuooo
+
+# Runtime and product boundaries
+/apps/mobile/ @Mikuooo
+/packages/ @Mikuooo
+/services/ @Mikuooo
+
+# Delivery and repository knowledge
+/.github/ @Mikuooo
+/scripts/ @Mikuooo
+/docs/ @Mikuooo
+/AGENTS.md @Mikuooo
+/ARCHITECTURE.md @Mikuooo

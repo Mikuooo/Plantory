@@ -12,6 +12,7 @@ const ELIGIBLE_CONCLUSIONS = new Set([
 ]);
 const TEST_CONCLUSIONS = new Set(['failure', 'success']);
 const TEST_STEP_NAME = 'Unit tests';
+const GITHUB_OWNER_PATTERN = /^@[A-Za-z0-9][A-Za-z0-9-]*(?:\/[A-Za-z0-9_.-]+)?$/;
 
 export function buildQualityTrends({ runs, documentRegistry, defectLedger, asOf, weeks = 12 }) {
   const asOfDate = parseTimestamp(asOf, 'asOf');
@@ -62,8 +63,11 @@ export function validateDocumentRegistry(registry) {
       throw new Error(`Document paths must be non-empty and unique: ${document.path ?? '<missing>'}`);
     }
     paths.add(document.path);
-    if (!document.owner || !Number.isInteger(document.maxAgeDays) || document.maxAgeDays < 1) {
-      throw new Error(`Document ${document.path} needs an owner and a positive integer maxAgeDays.`);
+    if (!GITHUB_OWNER_PATTERN.test(document.owner ?? '')) {
+      throw new Error(`Document ${document.path} owner must be a GitHub user or team handle.`);
+    }
+    if (!Number.isInteger(document.maxAgeDays) || document.maxAgeDays < 1) {
+      throw new Error(`Document ${document.path} needs a positive integer maxAgeDays.`);
     }
     if (!Array.isArray(document.reviews) || document.reviews.length === 0) {
       throw new Error(`Document ${document.path} needs at least one review date.`);

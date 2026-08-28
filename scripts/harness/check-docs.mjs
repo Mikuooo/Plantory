@@ -32,6 +32,7 @@ for (const relativePath of docs) {
 const requiredKnowledge = [
   'ARCHITECTURE.md',
   'docs/core-beliefs.md',
+  'docs/ownership.md',
   'docs/quality.md',
   'docs/quality-trends.md',
   'docs/testing.md',
@@ -43,10 +44,19 @@ for (const relativePath of requiredKnowledge) {
 }
 
 try {
+  const codeowners = readFileSync(join(root, '.github/CODEOWNERS'), 'utf8');
+  const codeownerHandles = new Set(codeowners
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+    .flatMap((line) => line.split(/\s+/).slice(1)));
   const registry = JSON.parse(readFileSync(join(root, 'docs/quality/document-freshness.json'), 'utf8'));
   validateDocumentRegistry(registry);
   for (const document of registry.documents) {
     if (!existsSync(join(root, document.path))) failures.push(`Freshness registry references missing document: ${document.path}`);
+    if (!codeownerHandles.has(document.owner)) {
+      failures.push(`Freshness owner is not present in CODEOWNERS: ${document.path} -> ${document.owner}`);
+    }
   }
   const defects = JSON.parse(readFileSync(join(root, 'docs/quality/escaped-defects.json'), 'utf8'));
   validateDefectLedger(defects);

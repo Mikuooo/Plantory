@@ -7,6 +7,7 @@ const failures = [];
 const required = [
   'AGENTS.md',
   'ARCHITECTURE.md',
+  '.github/CODEOWNERS',
   'apps/mobile/AGENTS.md',
   'docs/AGENTS.md',
   'packages/AGENTS.md',
@@ -14,6 +15,24 @@ const required = [
 ];
 for (const relativePath of required) {
   if (!existsSync(join(root, relativePath))) failures.push(`Missing repository guide: ${relativePath}`);
+}
+
+const codeownersPath = join(root, '.github/CODEOWNERS');
+if (existsSync(codeownersPath)) {
+  const ownerPattern = /^@[A-Za-z0-9][A-Za-z0-9-]*(?:\/[A-Za-z0-9_.-]+)?$/;
+  const rules = readFileSync(codeownersPath, 'utf8')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+    .map((line) => line.split(/\s+/));
+  if (!rules.some(([pattern, ...owners]) => pattern === '*' && owners.length > 0)) {
+    failures.push('.github/CODEOWNERS must define a default * owner rule.');
+  }
+  for (const [pattern, ...owners] of rules) {
+    if (!pattern || owners.length === 0 || owners.some((owner) => !ownerPattern.test(owner))) {
+      failures.push(`Invalid CODEOWNERS rule: ${[pattern, ...owners].join(' ')}`);
+    }
+  }
 }
 
 const cssModuleTypesPath = join(root, 'apps/mobile/css-modules.d.ts');

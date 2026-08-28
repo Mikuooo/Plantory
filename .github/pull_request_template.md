@@ -8,6 +8,12 @@ Describe the user-visible or engineering outcome and link the approved source.
 - Explicitly unchanged:
 - Design or execution plan:
 
+## Ownership
+
+- [ ] Matching CODEOWNERS were notified, or the author is the owner and recorded self-review
+- [ ] Owner feedback, unavailable owners, and unresolved ownership risk are recorded
+- [ ] Ownership was used for review routing only; required approval was not assumed
+
 ## Risk
 
 - Data, compatibility, security, or native risk:

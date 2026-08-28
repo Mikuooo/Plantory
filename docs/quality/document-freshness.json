@@ -3,37 +3,43 @@
   "documents": [
     {
       "path": "ARCHITECTURE.md",
-      "owner": "engineering",
+      "owner": "@Mikuooo",
       "maxAgeDays": 90,
       "reviews": ["2026-08-28"]
     },
     {
       "path": "docs/core-beliefs.md",
-      "owner": "product-engineering",
+      "owner": "@Mikuooo",
       "maxAgeDays": 180,
       "reviews": ["2026-08-28"]
     },
     {
       "path": "docs/quality.md",
-      "owner": "engineering",
+      "owner": "@Mikuooo",
       "maxAgeDays": 30,
       "reviews": ["2026-08-28"]
     },
     {
       "path": "docs/testing.md",
-      "owner": "engineering",
+      "owner": "@Mikuooo",
       "maxAgeDays": 90,
       "reviews": ["2026-08-28"]
     },
     {
       "path": "docs/design-docs/index.md",
-      "owner": "engineering",
+      "owner": "@Mikuooo",
       "maxAgeDays": 90,
       "reviews": ["2026-08-28"]
     },
     {
       "path": "docs/exec-plans/README.md",
-      "owner": "engineering",
+      "owner": "@Mikuooo",
+      "maxAgeDays": 90,
+      "reviews": ["2026-08-28"]
+    },
+    {
+      "path": "docs/ownership.md",
+      "owner": "@Mikuooo",
       "maxAgeDays": 90,
       "reviews": ["2026-08-28"]
     }
